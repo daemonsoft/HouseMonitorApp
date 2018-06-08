@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_number": "981778524185",
+    "firebase_url": "https://housemonitorapp.firebaseio.com",
+    "project_id": "housemonitorapp",
+    "storage_bucket": "housemonitorapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:981778524185:android:081a5fd49cf19f09",
+        "android_client_info": {
+          "package_name": "me.daemonsoft.housemonitor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "981778524185-hfic41j0kgsrrjc65n18u4o99dq1e979.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.daemonsoft.housemonitor",
+            "certificate_hash": "5417cf81ff6e0c4f1bd96a881eaf9d95915f825a"
+          }
+        },
+        {
+          "client_id": "981778524185-ma5c9cdl33reb0hofs4se8l56aodfelh.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "981778524185-ma5c9cdl33reb0hofs4se8l56aodfelh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbNjTO7IWJlXYO4-lCN9hQll_7n6ytSOI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "981778524185-ma5c9cdl33reb0hofs4se8l56aodfelh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
