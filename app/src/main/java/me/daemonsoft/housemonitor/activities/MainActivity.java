@@ -1,8 +1,10 @@
 package me.daemonsoft.housemonitor.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,8 +15,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -38,7 +48,11 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private ToggleButton mainDoorButton;
     private Switch livingRoomSwitch;
+    private Switch mainRoomSiwtch;
     private CollectionReference collection;
+
+    // [START declare_auth]
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +60,16 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // [START initialize_auth]
+        mAuth = FirebaseAuth.getInstance();
+        // [END initialize_auth]
+
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (null == currentUser) {
+            startLoginActivity();
+        }
+
 
 /*        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -56,20 +80,70 @@ public class MainActivity extends AppCompatActivity
             }
         });*/
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        TextView mainDoorLabel = findViewById(R.id.mainDoorLabel);
+        mainDoorLabel.setGravity(Gravity.CENTER_VERTICAL);
 
         mainDoorButton = findViewById(R.id.mainDoorButton);
         livingRoomSwitch = findViewById(R.id.livingRoomSwitch);
+        mainRoomSiwtch = findViewById(R.id.mainRoomSwitch);
+        final LineChart energyChart = findViewById(R.id.energy_chart);
+        LineChart waterChart = findViewById(R.id.water_chart);
+
 
         // Reference to the collection "users"
-        collection = FirebaseFirestore.getInstance().collection("devices");
+
+
+        collection = FirebaseFirestore.getInstance()
+                .collection(currentUser.getUid() + "/house/devices");
+
+        FirebaseFirestore.getInstance()
+                .collection(currentUser.getUid() + "/house/energy-comsuption")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
+
+                        //YourData[] dataObjects = ...;
+
+                        List<Entry> entries = new ArrayList<Entry>();
+
+                        //for (YourData data : dataObjects) {
+
+                        // turn your data into Entry objects
+                        //    entries.add(new Entry(data.getValueX(), data.getValueY()));
+                        // }
+
+                        float counter = 0;
+
+                        for (QueryDocumentSnapshot doc : value) {
+                            if (doc.get("date") != null) {
+                                counter++;
+                                entries.add(new Entry(counter, doc.getDouble("value").floatValue()));
+                            }
+                        }
+
+                        LineDataSet dataSet = new LineDataSet(entries, "Label");
+
+                        LineData lineData = new LineData(dataSet);
+                        energyChart.setData(lineData);
+                        energyChart.invalidate();
+
+                    }
+                });
+
         collection.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value,
@@ -178,6 +252,26 @@ public class MainActivity extends AppCompatActivity
                 data.put("status", livingRoomSwitch.isChecked() ? 1 : 0);
                 collection.document("livingroomligth").set(data, SetOptions.merge());
                 break;
+            case R.id.mainRoomSwitch:
+                data.put("status", mainRoomSiwtch.isChecked() ? 1 : 0);
+                collection.document("mainroomligth").set(data, SetOptions.merge());
+                break;
         }
+    }
+
+    // [START on_start_check_user]
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+
+    // [END on_start_check_user]
+
+    private void startLoginActivity() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 }
